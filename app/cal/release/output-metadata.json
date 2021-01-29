@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "dev.kiwik.tracking",
+  "variantName": "calRelease",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "properties": [],
+      "versionCode": 6,
+      "versionName": "1.5.0",
+      "enabled": true,
+      "outputFile": "app-cal-release.apk"
+    }
+  ]
+}

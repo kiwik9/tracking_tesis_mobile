@@ -1,0 +1,56 @@
+{
+  "project_info": {
+    "project_number": "990298228088",
+    "firebase_url": "https://tracking-297017.firebaseio.com",
+    "project_id": "tracking-297017",
+    "storage_bucket": "tracking-297017.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:990298228088:android:cf6ed064bd3df9e0ae748d",
+        "android_client_info": {
+          "package_name": "dev.kiwik.tracking"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "990298228088-cnh2ekl7v14gvop6ruprmevvn2rlhoov.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dev.kiwik.tracking",
+            "certificate_hash": "19813beed47b99a501c21e30c9a79512c94e0ba5"
+          }
+        },
+        {
+          "client_id": "990298228088-lji7i16gjf7j9vb9pvj4d1oe1v2hqk8j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dev.kiwik.tracking",
+            "certificate_hash": "b09544ccc3b4d22583ebf441edbb3bd464d57b07"
+          }
+        },
+        {
+          "client_id": "990298228088-4iviv1urfu34fumd5rc1ug428kh3peo5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArOJhB8wZEo_TAEsPLy6ZbMPf0k7aZedo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "990298228088-4iviv1urfu34fumd5rc1ug428kh3peo5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
