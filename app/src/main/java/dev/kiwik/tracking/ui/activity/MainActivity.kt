@@ -25,6 +25,7 @@ import androidx.work.WorkManager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.github.jjobes.slidedatetimepicker.SlideDateTimeListener
 import com.github.jjobes.slidedatetimepicker.SlideDateTimePicker
+import com.google.android.gms.location.FusedLocationProviderApi
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -56,7 +57,7 @@ import kotlin.math.sqrt
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolylineClickListener,
-        GoogleMap.OnPolygonClickListener, GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMyLocationClickListener {
+    GoogleMap.OnPolygonClickListener, GoogleMap.OnMyLocationClickListener {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var mMap: GoogleMap
@@ -144,16 +145,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
         workManager.enqueue(request)
 
         WorkManager.getInstance(this).getWorkInfoByIdLiveData(request.id)
-                .observe(this) { workInfo ->
-                    if (workInfo != null && workInfo.state == WorkInfo.State.SUCCEEDED) {
-                        binding.pgIntent.isVisible = false
-                        binding.layoutLeyend.isVisible = true
-                    } else if (workInfo != null && workInfo.state == WorkInfo.State.RUNNING) {
-                        binding.pgIntent.isVisible = true
-                    } else if (workInfo != null && workInfo.state == WorkInfo.State.FAILED) {
-                        binding.pgIntent.isVisible = false
-                    }
+            .observe(this) { workInfo ->
+                if (workInfo != null && workInfo.state == WorkInfo.State.SUCCEEDED) {
+                    binding.pgIntent.isVisible = false
+                    binding.layoutLeyend.isVisible = true
+                } else if (workInfo != null && workInfo.state == WorkInfo.State.RUNNING) {
+                    binding.pgIntent.isVisible = true
+                } else if (workInfo != null && workInfo.state == WorkInfo.State.FAILED) {
+                    binding.pgIntent.isVisible = false
                 }
+            }
     }
 
     @SuppressLint("SetTextI18n")
@@ -164,7 +165,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
 
     private fun initMap() {
         val mapFragment = supportFragmentManager
-                .findFragmentById(R.id.map) as SupportMapFragment
+            .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
 
@@ -175,6 +176,33 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
             setTrackingTrace(list.toMutableList())
             trackingViewModel.getTrackingPattern().observe(this) { pattern ->
                 setPatternTrackingTrace(pattern.toMutableList())
+            }
+        }
+
+        val fusedLocationClient: FusedLocationProviderClient =
+            LocationServices.getFusedLocationProviderClient(this)
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+
+        fusedLocationClient.lastLocation.addOnCompleteListener {
+            if (it.isSuccessful and it.result.isNotNull()) {
+                val loc = it.result!!
+                mMap.moveCamera(
+                    CameraUpdateFactory.newLatLngZoom(
+                        LatLng(
+                            loc.latitude,
+                            loc.longitude
+                        ), 18f
+                    )
+                )
             }
         }
     }
@@ -208,15 +236,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
 
                     if (dateInit.isBlank() or dateEnd.isBlank()) {
                         Toast.makeText(
-                                this@MainActivity,
-                                "Es necesario llenar las dos fechas.",
-                                Toast.LENGTH_LONG
+                            this@MainActivity,
+                            "Es necesario llenar las dos fechas.",
+                            Toast.LENGTH_LONG
                         ).show()
                         return@setOnClickListener
                     }
 
                     val pref = Pref.getInstance()
-                    pref.values.filterParamTracking = FilterParamTracking(dateInit, dateEnd, dateInitPattern, dateEndPattern)
+                    pref.values.filterParamTracking =
+                        FilterParamTracking(dateInit, dateEnd, dateInitPattern, dateEndPattern)
                     pref.update()
                     dateInit = ""
                     dateEnd = ""
@@ -231,11 +260,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
 
     private fun showDataTimePicker() {
         SlideDateTimePicker.Builder(supportFragmentManager)
-                .setListener(slideDateTimeListener)
-                .setInitialDate(Date())
-                .setMaxDate(Date())
-                .build()
-                .show()
+            .setListener(slideDateTimeListener)
+            .setInitialDate(Date())
+            .setMaxDate(Date())
+            .build()
+            .show()
     }
 
     private val slideDateTimeListener: SlideDateTimeListener = object : SlideDateTimeListener() {
@@ -266,7 +295,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
 
     private fun setTrackingTrace(locations: MutableList<Tracking>) {
         mMap.uiSettings.isZoomControlsEnabled = true
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             mMap.isMyLocationEnabled = true
         }
         mMap.uiSettings.isMyLocationButtonEnabled = true
@@ -277,17 +313,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
             val end = locations.lastOrNull()
             if (start.isNotNull()) {
                 addMarker(
-                        MarkerOptions()
-                                .position(LatLng(start!!.latitude, start.longitude))
-                                .title("Inicio")
+                    MarkerOptions()
+                        .position(LatLng(start!!.latitude, start.longitude))
+                        .title("Inicio")
                 )
             }
 
             if (end.isNotNull()) {
                 addMarker(
-                        MarkerOptions()
-                                .position(LatLng(end!!.latitude, end.longitude))
-                                .title("Fin")
+                    MarkerOptions()
+                        .position(LatLng(end!!.latitude, end.longitude))
+                        .title("Fin")
                 )
             }
 
@@ -300,26 +336,25 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
                 }
                 //  distance += calculateDistance(positions.first().latitude,positions.last().latitude, positions.first().longitude, positions.last().longitude )
                 this.addPolyline(
-                        PolylineOptions()
-                                .color(getColorBySpeed(positions.firstOrNull()?.speed ?: 0f))
-                                .add(*positions.map { LatLng(it.latitude, it.longitude) }.toTypedArray())
+                    PolylineOptions()
+                        .color(getColorBySpeed(positions.firstOrNull()?.speed ?: 0f))
+                        .add(*positions.map { LatLng(it.latitude, it.longitude) }.toTypedArray())
                 )
             }
 
             if (start.isNotNull()) {
                 mMap.moveCamera(
-                        CameraUpdateFactory.newLatLngZoom(
-                                LatLng(
-                                        start!!.latitude,
-                                        start.longitude
-                                ), 32f
-                        )
+                    CameraUpdateFactory.newLatLngZoom(
+                        LatLng(
+                            start!!.latitude,
+                            start.longitude
+                        ), 32f
+                    )
                 )
             }
 
             this.setOnPolylineClickListener(this@MainActivity)
             this.setOnPolygonClickListener(this@MainActivity)
-            this.setOnMyLocationButtonClickListener(this@MainActivity)
             this.setOnMyLocationClickListener(this@MainActivity)
         }
     }
@@ -333,14 +368,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
                     positions.add(locations[i + 1])
                 }
                 this.addPolyline(
-                        PolylineOptions()
-                                .color(Color.RED)
-                                .add(*positions.map { LatLng(it.latitude, it.longitude) }.toTypedArray())
+                    PolylineOptions()
+                        .color(Color.RED)
+                        .add(*positions.map { LatLng(it.latitude, it.longitude) }.toTypedArray())
                 )
             }
             this.setOnPolylineClickListener(this@MainActivity)
             this.setOnPolygonClickListener(this@MainActivity)
-            this.setOnMyLocationButtonClickListener(this@MainActivity)
             this.setOnMyLocationClickListener(this@MainActivity)
         }
     }
@@ -382,35 +416,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnPolyli
     override fun onPolygonClick(p0: Polygon?) {
     }
 
-    override fun onMyLocationButtonClick(): Boolean {
-        val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return false
-        }
-        fusedLocationClient.lastLocation.addOnCompleteListener {
-            if (it.isSuccessful and it.result.isNotNull()) {
-                val loc = it.result!!
-                mMap.moveCamera(
-                        CameraUpdateFactory.newLatLngZoom(
-                                LatLng(
-                                        loc.latitude,
-                                        loc.longitude
-                                ), 18f
-                        )
-                )
-            }
-        }
-        return false
-    }
-
     override fun onMyLocationClick(@NonNull location: Location) {
     }
 
     private fun initLocationListener() {
         val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         val gpsStatus = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        val snackBar = Snackbar.make(binding.root, "Es necesario activar el gps para que funcione correctamente la aplicacion.",
-                Snackbar.LENGTH_LONG
+        val snackBar = Snackbar.make(
+            binding.root,
+            "Es necesario activar el gps para que funcione correctamente la aplicacion.",
+            Snackbar.LENGTH_LONG
         ).setAction("Activar") {
             val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
             startActivity(intent)

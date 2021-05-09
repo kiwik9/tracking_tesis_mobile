@@ -15,7 +15,7 @@ object Config {
         val config =
                 mapOf(
                         "DEV" to ProjectProperty(
-                                "\"http://192.168.0.104:8000\"" //"\"\""
+                                "\"http://192.168.0.106:8000\"" //"\"\""
                         ),
                         "PROD" to ProjectProperty("\"http://66.228.47.109:80\"" //"PROD" to ProjectProperty("\"http://162.243.100.163:7000\""
                         ),
